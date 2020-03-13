@@ -16,6 +16,10 @@ router.get('/', (req, res) => {
     });
 });
 
+router.get('/:id', validateProjectId, (req, res) => {
+  res.status(200).json(req.project);
+});
+
 router.post('/', validateProject, (req, res) => {
   const project = req.body;
   Projects.insert(project)
@@ -42,6 +46,25 @@ function validateProject(req, res, next) {
         .json({ message: 'project missing required field: description' })
     : null;
   next();
+}
+
+function validateProjectId(req, res, next) {
+  const { id } = req.params;
+  Projects.get(id)
+    .then(project => {
+      if (project) {
+        req.project = project;
+        next();
+      } else {
+        res.status(400).json({ message: 'invalid project id' });
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      res
+        .status(500)
+        .json({ message: 'There was an error retrieving the project.' });
+    });
 }
 
 module.exports = router;
