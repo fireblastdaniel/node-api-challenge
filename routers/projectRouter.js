@@ -21,6 +21,18 @@ router.get('/:id', validateProjectId, (req, res) => {
   res.status(200).json(req.project);
 });
 
+router.get('/:id/posts', validateProjectId, (req, res) => {
+  const { id } = req.params;
+  Projects.getProjectActions(id)
+    .then(actionList => res.status(200).json(actionList))
+    .catch(error => {
+      console.log(error);
+      res
+        .status(500)
+        .json({ message: 'There was an error retrieving the actions.' });
+    });
+});
+
 router.post('/', validateProject, (req, res) => {
   const project = req.body;
   Projects.insert(project)
@@ -42,6 +54,39 @@ router.post('/:id/posts', validateProjectId, validateAction, (req, res) => {
       res
         .status(500)
         .json({ message: 'There was an error adding the action.' });
+    });
+});
+
+router.delete('/:id', validateProjectId, (req, res) => {
+  const { id } = req.params;
+  Projects.remove(id)
+    .then(deleted =>
+      deleted
+        ? res.status(200).json(req.project)
+        : res.status(400).json({ message: 'No project was deleted' })
+    )
+    .catch(error => {
+      console.log(error);
+      res
+        .status(500)
+        .json({ message: 'There was an error deleting the project' });
+    });
+});
+
+router.put('/:id', validateProjectId, (req, res) => {
+  const { id } = req.params;
+  const changes = req.body;
+  Projects.update(id, changes)
+    .then(updatedProject =>
+      updatedProject
+        ? res.status(200).json(updatedProject)
+        : res.status(400).json({ message: 'The project was not updated' })
+    )
+    .catch(err => {
+      console.log(err);
+      res
+        .status(500)
+        .json({ message: 'There was an error updating the project.' });
     });
 });
 
@@ -83,7 +128,6 @@ function validateProjectId(req, res, next) {
 function validateAction(req, res, next) {
   const action = req.body;
   const { id } = req.params;
-  console.log(action);
   !action ? res.status(400).json({ message: 'missing action data' }) : null;
   !action.project_id
     ? res.status(400).json({ message: 'missing required field: project_id' })
@@ -104,6 +148,7 @@ function validateAction(req, res, next) {
   !action.notes
     ? res.status(400).json({ message: 'missing required field: notes' })
     : null;
+  console.log(res.status);
   next();
 }
 
