@@ -1,9 +1,11 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 
 const actionRouter = require('./routers/actionRouter');
 const projectRouter = require('./routers/projectRouter');
 const server = express();
 
+server.use(bodyParser.json());
 server.use('/api/actions', actionRouter);
 server.use('/api/projects', projectRouter);
 
